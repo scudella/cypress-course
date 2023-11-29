@@ -1,11 +1,29 @@
 /// <reference types="cypress" />
 
 describe('contact form', () => {
+  before(() => {
+    // Runs once before all tests in the block
+  });
+  beforeEach(() => {
+    // Runs before each test in the block
+    cy.visit('/about');
+    // e.g. Seeding the database
+    // should also include the clean up. Recommended by cypress. Here not "after"
+  });
+  afterEach(() => {
+    // Runs after each test in the block
+  });
+  after(() => {
+    // Runs once after all tests in the block
+  });
+
   it('should submit the form', () => {
-    cy.visit('http://localhost:5173/about');
-    cy.get('[data-cy="contact-input-message"]').type('Hello world!');
-    cy.get('[data-cy="contact-input-name"]').type('John Doe');
-    cy.get('[data-cy="contact-btn-submit"]')
+    cy.task('seedDatabase', 'filename.csv').then((returnValue) => {
+      // ... use returnValue
+    }); // task is a node event listener
+    cy.getById('contact-input-message').type('Hello world!');
+    cy.getById('contact-input-name').type('John Doe');
+    cy.getById('contact-btn-submit')
       .contains('Send Message') // chaining
       .and('not.have.attr', 'disabled'); // and is synonymous with should
     cy.get('[data-cy="contact-btn-submit"]').then((el) => {
@@ -14,8 +32,8 @@ describe('contact form', () => {
       expect(el.text()).to.be.eq('Send Message');
     });
     cy.screenshot();
-    cy.get('[data-cy="contact-input-email"]').type('test@example.com{enter}');
-    // const btn = cy.get('[data-cy="contact-btn-submit"]'); // do not use this
+    cy.get('[data-cy="contact-input-email"]').type('test@example.com');
+    cy.submitForm();
     cy.screenshot();
     cy.get('[data-cy="contact-btn-submit"]').as('submitBtn');
     cy.get('@submitBtn').click();
@@ -24,8 +42,7 @@ describe('contact form', () => {
   });
 
   it('should validate the form input', () => {
-    cy.visit('http://localhost:5173/about');
-    cy.get('[data-cy="contact-btn-submit"]').click();
+    cy.submitForm();
     cy.get('[data-cy="contact-btn-submit"]').then((el) => {
       expect(el).to.not.have.attr('disabled');
       expect(el.text()).to.not.equal('Sending...');
@@ -34,9 +51,6 @@ describe('contact form', () => {
     cy.get('[data-cy="contact-input-message"]').focus().blur();
     cy.get('[data-cy="contact-input-message"]')
       .parent()
-      // .then((el) => { // failed running npx cypress run
-      //   expect(el.attr('class')).to.contain('invalid');
-      // });
       .should('have.attr', 'class')
       .and('match', /invalid/);
     cy.get('[data-cy="contact-input-name"]').focus().blur();
