@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('tasks management', () => {
   it('should open and close the new task modal', () => {
     cy.visit('http://localhost:5173');
